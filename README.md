@@ -30,3 +30,6 @@ if the subscription does not exist but you wish to publish you may do:
 
 $: fs_mount create /path/to/topic/
 and then you will be able to interact with the topic as above
+=======
+Library to mount contents of subscribed mqtt topics to the filesystem. 
+
