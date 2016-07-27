@@ -5,8 +5,8 @@
     
     ----------------------------------------------------------------------------
     This code is intended to allow for mounting of mqtt topics to the file-system.
-    The intent is to be able to take advantage of mqtt in a very unix way so that 
-    you can combine this and take advantage of other tools.  
+    The intent is to be able to take advantage of mqtt in a unix style way so 
+    that you can trivially combine this and take advantage of other tools.  
     ----------------------------------------------------------------------------
 
     For example, imagine we have the following topics:
@@ -46,10 +46,6 @@
 var fse = require("fs-extra");
 var path = require("path");
 
-
-function get_value(x){
-    return x;
-}
 
 // Initializes the mqtt topics which creates files representing 
 // topics that we care about.  This will start subscriptions for 
