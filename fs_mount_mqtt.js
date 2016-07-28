@@ -72,7 +72,7 @@ function initialize_mqtt_topics (folder_root,topics){
         create_file_watch(folder_root, the_topic, function(value){
             //publish_mqtt_topic(topic, value);
             //debug_publish_mqtt_topic(the_topic,value);
-            publish_mqtt_topic(client,value.topic,value.content);
+            //publish_mqtt_topic(client,value.topic,value.content);
             //console.log('file changed' ,value);
         });
     }
