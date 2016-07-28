@@ -45,6 +45,8 @@
 
 var fse = require("fs-extra");
 var path = require("path");
+var mqtt = require("mqtt");
+
 
 
 // Initializes the mqtt topics which creates files representing 
@@ -59,31 +61,26 @@ function initialize_mqtt_topics (folder_root,topics){
         throw (new Error("topics is not defined in initialize_mqtt_topics"));
     }
     
+    var client = mqtt.connect("mqtt://localhost");
     for (var i = 0 ; i < topics.length ; i++){
-        var topic =  topics[i];
+        var the_topic =  topics[i];
                 
         // this initially creates the file.  The original value is undefined since no info on the topic exists.
-        
-
-        set_topic(folder_root, topic, JSON.stringify({topic: topic, value: null})); 
-        
-        /*subscribe_to_mqtt_topic(topic, function(value){    
-            var the_topic = topic;
-            // and we call it again whenever we receive a topic update
-            set_topic(folder_root, the_topic, value);
-        });*/
-          
-        /*debug_subscribe_to_mqtt_topic(topic, function(value){
-            // and we call it again whenever we receive a topic update
-           // set_topic(folder_root, value.topic, JSON.stringify(value));
-        });*/
-        
+        set_topic(folder_root, the_topic, JSON.stringify({topic: topic, value: null})); 
+         
         //When the value is modified we publish the new value
         create_file_watch(folder_root, topic, function(value){
             //publish_mqtt_topic(topic, value);
             debug_publish_mqtt_topic(topic,value);
         });
     }
+    
+    client.on("connect",function(){
+        subscribe_to_mqtt_topics(client,topics, function(topic, value){
+            console.log("received topic ",topic);
+            set_topic(folder_root,topic, value);
+        });
+    });
 }
 
 function ensure_all_topic_unique(topics){
@@ -104,8 +101,15 @@ function debug_subscribe_to_mqtt_topic (topic,callback){
 }
 
 // Initializes the logic to subscribe to an individual mqtt topic
-function subscribe_to_mqtt_topic (topic,callback){
-    throw (new Error("subscribe to mqtt topic not yet implemented"));
+function subscribe_to_mqtt_topics (client,topics,callback){
+    for (var i = 0 ; i < topics.length ; i++){
+        client.subscribe(topics[i]);
+        console.log('subscribed to ',topics[i]);
+    }
+    client.on("message",function(topic, message){
+        console.log("received ",topic);
+        callback(topic, message);
+    });
 }
 
 // Debug publish topic
@@ -197,6 +201,8 @@ function set_topic ( folder_root, full_topic_name, value ){
     
     fse.outputFile(path.join(folder_root,full_topic_name),value);    
 }
+
+
 
 module.exports = { 
     topic_exists: get_topic_exists_promise,
