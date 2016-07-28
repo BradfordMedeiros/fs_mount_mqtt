@@ -66,18 +66,20 @@ function initialize_mqtt_topics (folder_root,topics){
         var the_topic =  topics[i];
                 
         // this initially creates the file.  The original value is undefined since no info on the topic exists.
-        set_topic(folder_root, the_topic, JSON.stringify({topic: topic, value: null})); 
+        set_topic(folder_root, the_topic, JSON.stringify({topic: the_topic, value: null})); 
          
         //When the value is modified we publish the new value
-        create_file_watch(folder_root, topic, function(value){
+        create_file_watch(folder_root, the_topic, function(value){
             //publish_mqtt_topic(topic, value);
-            debug_publish_mqtt_topic(topic,value);
+            //debug_publish_mqtt_topic(the_topic,value);
+            publish_mqtt_topic(client,value.topic,value.content);
+            //console.log('file changed' ,value);
         });
     }
     
     client.on("connect",function(){
         subscribe_to_mqtt_topics(client,topics, function(topic, value){
-            console.log("received topic ",topic);
+            //console.log("received topic ",topic);
             set_topic(folder_root,topic, value);
         });
     });
@@ -107,7 +109,7 @@ function subscribe_to_mqtt_topics (client,topics,callback){
         console.log('subscribed to ',topics[i]);
     }
     client.on("message",function(topic, message){
-        console.log("received ",topic);
+     //   console.log("received ",topic);
         callback(topic, message);
     });
 }
@@ -118,8 +120,8 @@ function debug_publish_mqtt_topic(topic,value){
 }
 
 // Publishes an mqtt topic outbound
-function publish_mqtt_topic(topic){
-    throw (new Error("subscribe to mqtt topic not yet implemented"));
+function publish_mqtt_topic(client, topic,value){
+    client.publish(topic,JSON.stringify(value));
 }
 
 // Creates a file watch on a file folder_root/full_topic_name
