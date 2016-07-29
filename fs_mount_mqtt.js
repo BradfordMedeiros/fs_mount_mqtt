@@ -63,6 +63,7 @@ var topic_values = {
 // the topics and when the file is changed we publish the contents
 // of that file as the value to the mqtt topic.
 function initialize_mqtt_topics (folder_root,topics){   
+    
     if (folder_root === undefined){
         throw (new Error("folder root is not defined in initialize_mqtt_topics"));
     }
@@ -100,6 +101,7 @@ function initialize_mqtt_topics (folder_root,topics){
 
 // Initializes the logic to subscribe to an individual mqtt topic
 function subscribe_to_mqtt_topics (client,topics,callback){
+    
     for (var i = 0 ; i < topics.length ; i++){
         client.subscribe(topics[i]);
     }
@@ -109,7 +111,7 @@ function subscribe_to_mqtt_topics (client,topics,callback){
 }
 
 // Publishes an mqtt topic to mqtt broker
-function publish_mqtt_topic(client, topic,value){ 
+function publish_mqtt_topic(client, topic,value){
     client.publish(topic,JSON.stringify(value));
 }
 
@@ -117,6 +119,7 @@ function publish_mqtt_topic(client, topic,value){
 // When the file is modified the contents of the file will be passed
 // into the callback.  The contents of the file should be JSON format.
 function create_file_watch(folder_root, full_topic_name, callback){
+    
     if (folder_root === undefined){
         throw (new Error("folder root in undeined in create file watch"));
     }
@@ -130,7 +133,6 @@ function create_file_watch(folder_root, full_topic_name, callback){
     }
     
     var filepath = path.join(path.resolve(folder_root),full_topic_name)
-    
     var watcher = chokidar.watch(filepath);
     var process_watch = function(){
         fse.readFile(filepath, 'utf-8', function(err,content){     
