@@ -55,14 +55,14 @@ var chokidar = require("chokidar");
 
 // In memory representation of topic the topic_values
 var topic_values = {
-    // fields dynamically populated
+    // fields dynamically populated into map
 };
 
 // Initializes the mqtt topics which creates files representing 
 // topics that we care about.  This will start subscriptions for 
 // the topics and when the file is changed we publish the contents
 // of that file as the value to the mqtt topic.
-function initialize_mqtt_topics (folder_root,topics){
+function initialize_mqtt_topics (folder_root,topics){   
     if (folder_root === undefined){
         throw (new Error("folder root is not defined in initialize_mqtt_topics"));
     }
@@ -71,7 +71,7 @@ function initialize_mqtt_topics (folder_root,topics){
     }
     
     var client = mqtt.connect("mqtt://localhost");
-  
+    
     subscribe_to_mqtt_topics(client,topics, function(topic,message){
     
         // This check is important.
@@ -109,8 +109,7 @@ function subscribe_to_mqtt_topics (client,topics,callback){
 }
 
 // Publishes an mqtt topic to mqtt broker
-function publish_mqtt_topic(client, topic,value){
-    
+function publish_mqtt_topic(client, topic,value){ 
     client.publish(topic,JSON.stringify(value));
 }
 
@@ -131,7 +130,6 @@ function create_file_watch(folder_root, full_topic_name, callback){
     }
     
     var filepath = path.join(path.resolve(folder_root),full_topic_name)
-    console.log('creating file watch on  ',filepath);
     
     var watcher = chokidar.watch(filepath);
     var process_watch = function(){
@@ -181,20 +179,17 @@ function get_topic_exists_promise(folder_root, full_topic_name){
 // The topic name is formatting as  x/y/z and sub-folders will be created if they 
 // do not exist while writing the file value if they do not already exit
 function set_topic ( folder_root, full_topic_name, value ){
+    
     if (folder_root === undefined){
         throw (new Error("folder root in undeined in create file watch"));
-    }
-    
+    }   
     if (full_topic_name === undefined){
         throw (new Error("full_topic_name must be defined in create file watch"));
     }
     if (value === undefined){
         throw (new Error("value must be defined in create file watch"));
     }   
-   
-    console.log("writing <f: ",folder_root,"/",full_topic_name," with value ", value);
-    console.log("");
-    
+       
     fse.outputFile(path.join(folder_root,full_topic_name),value);    
 }
 
