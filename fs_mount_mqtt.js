@@ -6,7 +6,7 @@
     ----------------------------------------------------------------------------
     This code is intended to allow for mounting of mqtt topics to the file-system.
     The intent is to be able to take advantage of mqtt in a unix style way so 
-    that you can trivially combine this and take advantage of other tools.  
+    that you can trivially combine this and take advantage of other tools. 
     ----------------------------------------------------------------------------
 
     For example, imagine we have the following topics:
@@ -46,6 +46,10 @@
 var fse = require("fs-extra");
 var path = require("path");
 var mqtt = require("mqtt");
+
+// chokidar used for file change monitoring.  fs module file monitoring is unstable, so we use
+// this instead.  when fs monitoring becomes stable can get rid of this dependency in 
+// favor of that.
 var chokidar = require("chokidar");
 
 
@@ -53,8 +57,6 @@ var chokidar = require("chokidar");
 var topic_values = {
     // fields dynamically populated
 };
-
-
 
 // Initializes the mqtt topics which creates files representing 
 // topics that we care about.  This will start subscriptions for 
@@ -71,14 +73,14 @@ function initialize_mqtt_topics (folder_root,topics){
     var client = mqtt.connect("mqtt://localhost");
   
     subscribe_to_mqtt_topics(client,topics, function(topic,message){
-        console.log('received ',topic);
+    
+        // This check is important.
+        // It is done so we don't rewrite the file if the value of the file has not changed
+        // If we did, we could get caught in infinite loop/
+        // We can do this since we watch for file changes, which should make this accurates
         if (message !== topic_values[topic]){
             set_topic(folder_root,topic, message);
             topic_values[topic] = message;
-            console.log(JSON.stringify({
-                topic: topic,
-                message: message
-            }));
         }
     });
     
@@ -91,60 +93,22 @@ function initialize_mqtt_topics (folder_root,topics){
         
         //When the value is modified we publish the new value
         create_file_watch(folder_root, the_topic, function(value){
-            //publish_mqtt_topic(topic, value);
-            //debug_publish_mqtt_topic(the_topic,value);
-           
             publish_mqtt_topic(client,value.topic,value.content);
-            console.log("published ",value.topic);
-            //(
-            // update the file if the value has changed
-            /*console.log('value is');
-            console.log(value);
-            console.log('type ',typeof(value));
-            
-            console.log(topic_values[topic]);
-            console.log('type ',typeof(topic_values[topic]));8=*/
-            
-
         });
     };
-}
-
-function ensure_all_topic_unique(topics){
-    console.log("Warning ensure all topics unique not yet implemented");
-}
-
-// Debug subscribe to topic 
-function debug_subscribe_to_mqtt_topic (topic,callback){
-    console.log("Debug temporary method needs to be replaced by non-mock version");
-    setInterval(function(){
-        var value = Math.floor(Math.random()*30);
-        //console.log("Debug:  Received subscription ",topic, "with value ", value);
-        callback({
-            topic: topic,
-            value: value
-        })
-    },Math.floor(Math.random()*20*1000));
 }
 
 // Initializes the logic to subscribe to an individual mqtt topic
 function subscribe_to_mqtt_topics (client,topics,callback){
     for (var i = 0 ; i < topics.length ; i++){
         client.subscribe(topics[i]);
-        console.log('subscribed to ',topics[i]);
     }
     client.on("message",function(topic, message){
-     //   console.log("received ",topic);
         callback(topic, message);
     });
 }
 
-// Debug publish topic
-function debug_publish_mqtt_topic(topic,value){
-    console.log("Debug:  Published ",topic, "with value ", value);
-}
-
-// Publishes an mqtt topic outbound
+// Publishes an mqtt topic to mqtt broker
 function publish_mqtt_topic(client, topic,value){
     
     client.publish(topic,JSON.stringify(value));
