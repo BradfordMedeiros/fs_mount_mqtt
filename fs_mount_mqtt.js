@@ -46,6 +46,13 @@
 var fse = require("fs-extra");
 var path = require("path");
 var mqtt = require("mqtt");
+var chokidar = require("chokidar");
+
+
+// In memory representation of topic the topic_values
+var topic_values = {
+    // fields dynamically populated
+};
 
 
 
@@ -62,27 +69,45 @@ function initialize_mqtt_topics (folder_root,topics){
     }
     
     var client = mqtt.connect("mqtt://localhost");
+  
+    subscribe_to_mqtt_topics(client,topics, function(topic,message){
+        console.log('received ',topic);
+        if (message !== topic_values[topic]){
+            set_topic(folder_root,topic, message);
+            topic_values[topic] = message;
+            console.log(JSON.stringify({
+                topic: topic,
+                message: message
+            }));
+        }
+    });
+    
     for (var i = 0 ; i < topics.length ; i++){
         var the_topic =  topics[i];
                 
         // this initially creates the file.  The original value is undefined since no info on the topic exists.
         set_topic(folder_root, the_topic, JSON.stringify({topic: the_topic, value: null})); 
-         
+        topic_values[the_topic] = null;
+        
         //When the value is modified we publish the new value
         create_file_watch(folder_root, the_topic, function(value){
             //publish_mqtt_topic(topic, value);
             //debug_publish_mqtt_topic(the_topic,value);
-            //publish_mqtt_topic(client,value.topic,value.content);
-            //console.log('file changed' ,value);
+           
+            publish_mqtt_topic(client,value.topic,value.content);
+            console.log("published ",value.topic);
+            //(
+            // update the file if the value has changed
+            /*console.log('value is');
+            console.log(value);
+            console.log('type ',typeof(value));
+            
+            console.log(topic_values[topic]);
+            console.log('type ',typeof(topic_values[topic]));8=*/
+            
+
         });
-    }
-    
-    client.on("connect",function(){
-        subscribe_to_mqtt_topics(client,topics, function(topic, value){
-            //console.log("received topic ",topic);
-            set_topic(folder_root,topic, value);
-        });
-    });
+    };
 }
 
 function ensure_all_topic_unique(topics){
@@ -121,6 +146,7 @@ function debug_publish_mqtt_topic(topic,value){
 
 // Publishes an mqtt topic outbound
 function publish_mqtt_topic(client, topic,value){
+    
     client.publish(topic,JSON.stringify(value));
 }
 
@@ -141,10 +167,11 @@ function create_file_watch(folder_root, full_topic_name, callback){
     }
     
     var filepath = path.join(path.resolve(folder_root),full_topic_name)
-
-    fse.watch(filepath, function(){
-        fse.readFile(filepath, 'utf-8', function(err,content){
-        
+    console.log('creating file watch on  ',filepath);
+    
+    var watcher = chokidar.watch(filepath);
+    var process_watch = function(){
+        fse.readFile(filepath, 'utf-8', function(err,content){     
             callback({
                 filepath: filepath,
                 topic: full_topic_name,
@@ -154,8 +181,11 @@ function create_file_watch(folder_root, full_topic_name, callback){
             if (err != undefined){
                 console.log("warning error in file read");
             }   
-        });
-    });
+        }); 
+    }
+    
+    //watcher.on("add", process_watch);
+    watcher.on("change", process_watch);
 }
 
 // Returns a promise that resolves if the topic exists, or rejects if it does not
