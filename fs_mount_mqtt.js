@@ -58,11 +58,45 @@ var topic_values = {
     // fields dynamically populated into map
 };
 
+
+/*
+    ./mock
+        ./temp
+        ./indoor
+            ./fire
+            ./water
+        ./outdoor
+            ./air_quality
+            ./time
+    
+    the usage options:  
+                - c : specifies the config file of topics to use
+                - p : specifies the path of the root folder to put topics
+                - f : if a file exists we overwrite that (if a file exists with this name otherwise we error)
+  
+    @todo:
+    1. need to verify all topics are unique
+    2. need to make sure you cannot break out of the root folder (so ./x is max topic level)
+    3. need to verify no file exists which we are going to use
+*/
+
+function verify_all_topics_unique(topics){
+    throw (new Error("not implemented error"));
+}
+
+function verify_all_topics_above_root_level(topics){
+    throw (new Error("not implemented error"));
+}
+
+function verify_all_files_have_no_conflicts(topics){
+    throw (new Error("not implemented error"));
+}
+
 // Initializes the mqtt topics which creates files representing 
 // topics that we care about.  This will start subscriptions for 
 // the topics and when the file is changed we publish the contents
 // of that file as the value to the mqtt topic.
-function initialize_mqtt_topics (folder_root,topics){   
+function initialize_mqtt_topics (folder_root,topics){
     
     if (folder_root === undefined){
         throw (new Error("folder root is not defined in initialize_mqtt_topics"));
