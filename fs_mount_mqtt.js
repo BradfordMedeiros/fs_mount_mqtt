@@ -39,6 +39,9 @@
     ----------------------------------------------------------------------------
     echo <json contents> > topic_file       --> to publish the topic
     cat topic_file                          --> to view file contents
+    
+    WARNING:  Note that this method can and will redrop results.  It should not be used if you care about not losing data
+    Since we watch for a file to change, if the 
      
 **/
 
@@ -57,6 +60,12 @@ var chokidar = require("chokidar");
 var topic_values = {
     // fields dynamically populated into map
 };
+
+// example extension field
+//var the_extensions = {
+//    "/actions/": ".action.json",
+//    "/states/":  ".state.json"
+//}
 
 
 /*
@@ -96,7 +105,7 @@ function verify_all_files_have_no_conflicts(topics){
 // topics that we care about.  This will start subscriptions for 
 // the topics and when the file is changed we publish the contents
 // of that file as the value to the mqtt topic.
-function initialize_mqtt_topics (folder_root,topics){
+function initialize_mqtt_topics (folder_root,topics,extensions){
     
     if (folder_root === undefined){
         throw (new Error("folder root is not defined in initialize_mqtt_topics"));
@@ -114,7 +123,7 @@ function initialize_mqtt_topics (folder_root,topics){
         // If we did, we could get caught in infinite loop/
         // We can do this since we watch for file changes, which should make this accurates
         if (message !== topic_values[topic]){
-            set_topic(folder_root,topic, message);
+            set_topic(folder_root,topic, message,extensions);
             topic_values[topic] = message;
         }
     });
@@ -123,11 +132,11 @@ function initialize_mqtt_topics (folder_root,topics){
         var the_topic =  topics[i];
                 
         // this initially creates the file.  The original value is undefined since no info on the topic exists.
-        set_topic(folder_root, the_topic, JSON.stringify({topic: the_topic, value: null})); 
+        set_topic(folder_root, the_topic, JSON.stringify({topic: the_topic, value: null}),extensions); 
         topic_values[the_topic] = null;
         
         //When the value is modified we publish the new value
-        create_file_watch(folder_root, the_topic, function(value){
+        create_file_watch(folder_root, the_topic, extensions,function(value){
             publish_mqtt_topic(client,value.topic,value.content);
         });
     };
@@ -152,7 +161,7 @@ function publish_mqtt_topic(client, topic,value){
 // Creates a file watch on a file folder_root/full_topic_name
 // When the file is modified the contents of the file will be passed
 // into the callback.  The contents of the file should be JSON format.
-function create_file_watch(folder_root, full_topic_name, callback){
+function create_file_watch(folder_root, full_topic_name, extensions, callback){
     
     if (folder_root === undefined){
         throw (new Error("folder root in undeined in create file watch"));
@@ -166,7 +175,7 @@ function create_file_watch(folder_root, full_topic_name, callback){
         throw (new Error("callback must be defined in create file watch"));
     }
     
-    var filepath = path.join(path.resolve(folder_root),full_topic_name)
+    var filepath = path.join(path.resolve(folder_root),get_file_name(full_topic_name,extensions))
     var watcher = chokidar.watch(filepath);
     var process_watch = function(){
         fse.readFile(filepath, 'utf-8', function(err,content){     
@@ -211,10 +220,19 @@ function get_topic_exists_promise(folder_root, full_topic_name){
     return topic_exists_promise;
 }
 
+function get_file_name(full_topic_name, extensions){
+    var the_extensions = extensions !== undefined ? extensions:  {};
+    var keys = Object.keys(the_extensions);
+    
+    var suffixes = keys.filter((key)=> full_topic_name.indexOf(key) == 0);
+    var suffix = suffixes.length > 0 ? the_extensions[suffixes[0]] : "";
+    return full_topic_name+suffix;
+}
+
 // Sets the contents of the file equal to value in folder_root/full_topic_name
 // The topic name is formatting as  x/y/z and sub-folders will be created if they 
 // do not exist while writing the file value if they do not already exit
-function set_topic ( folder_root, full_topic_name, value ){
+function set_topic ( folder_root, full_topic_name, value, extensions){
     
     if (folder_root === undefined){
         throw (new Error("folder root in undeined in create file watch"));
@@ -224,11 +242,9 @@ function set_topic ( folder_root, full_topic_name, value ){
     }
     if (value === undefined){
         throw (new Error("value must be defined in create file watch"));
-    }   
-       
-    fse.outputFile(path.join(folder_root,full_topic_name),value);    
+    }    
+    fse.outputFile(path.join(folder_root,get_file_name(full_topic_name,extensions)),value);    
 }
-
 
 
 module.exports = { 
