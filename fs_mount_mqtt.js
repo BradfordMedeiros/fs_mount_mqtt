@@ -137,6 +137,7 @@ function initialize_mqtt_topics (folder_root,topics,extensions){
         
         //When the value is modified we publish the new value
         create_file_watch(folder_root, the_topic, extensions,function(value){
+            console.log("topic:  ",value," modified");
             publish_mqtt_topic(client,value.topic,value.content);
         });
     };

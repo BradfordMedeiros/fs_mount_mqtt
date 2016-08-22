@@ -1,18 +1,23 @@
 
+var path = require("path");
+mq = require(path.resolve('./fs_mount_mqtt.js'));
 
-mq = require('./fs_mount_mqtt.js');
+root = path.resolve("./mock");
+root1 = path.resolve("./mock0");
+var the_extensions = {
+    "/actions/": ".action.json",
+    "/states/":  ".state.json"
+}
 
-root = path.resolve('./mock')
+topics = [
+    "actions/fire",
+    "/actions/water",
+    "/actions/device0/air",
+    "/states/device0/fire",
+    "/states/device1/air",
+    "/states/temperature",
+    "/states/color"
+]
 
-
-topics = ['/indoor/room0/temperature',
-          
-'/indoor/room1/temperature',
-         
-'/indoor/is_locked',
-         
-'/outdoor/temperature',
-          
-'/outdoor/humidity',
-          
-'is_active'];
+//mq.initialize_mqtt_topics(root,topics);
+//mq.initialize_mqtt_topics(root1,topics);
