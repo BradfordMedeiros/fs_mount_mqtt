@@ -17,11 +17,11 @@ var the_extensions = {
 }
 
 topics = [
-    "/actions/fire",
-    "/actions/water",
-    "/actions/device0/air",
-    "/states/device0/fire",
-    "/states/device1/air",
+    //"/actions/fire",
+    //"/actions/water",
+    //"/actions/device0/air",
+    //"/states/device0/fire",
+    //"/states/device1/air",
     "/states/temperature",
     "/states/color"
 ]
