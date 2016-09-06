@@ -30,6 +30,3 @@ if (should_run === true){
     console.log("should run = true , initializing topics ",topics);
     mq.initialize_mqtt_topics(root_shared,topics,the_extensions);
 }
-
-//mq.initialize_mqtt_topics(root,topics);
-//mq.initialize_mqtt_topics(root1,topics);

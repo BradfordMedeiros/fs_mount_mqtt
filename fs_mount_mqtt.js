@@ -179,20 +179,31 @@ function create_file_watch(folder_root, full_topic_name, extensions, callback){
     var filepath = path.join(path.resolve(folder_root),get_file_name(full_topic_name,extensions))
     var watcher = chokidar.watch(filepath);
     var process_watch = function(){
-        fse.readFile(filepath, 'utf-8', function(err,content){     
-            callback({
-                filepath: filepath,
-                topic: full_topic_name,
-                dir: folder_root,
-                content: JSON.parse(content)
-            });
-            if (err != undefined){
-                console.log("warning error in file read");
-            }   
-        }); 
-    }
     
-    //watcher.on("add", process_watch);
+        fse.readFile(filepath, 'utf-8', function(err,content){   
+
+            var is_json_content = true;
+            var parsed_content = undefined;
+            try{
+               parsed_content = JSON.parse(content);
+            }catch(e){
+                is_json_content = false;
+            }
+            
+            if (err != undefined){
+                console.log("warning error in file read ",filepath, " error: ",err);
+            }else if (!is_json_content){
+                console.log("warning content is not json in ", filepath);
+            }else{ // no errors and is json so we can safely call the callback
+                callback({
+                    filepath: filepath,
+                    topic: full_topic_name,
+                    dir: folder_root,
+                    content: parsed_content
+                });
+            }       
+        }); 
+    }    
     watcher.on("change", process_watch);
 }
 
