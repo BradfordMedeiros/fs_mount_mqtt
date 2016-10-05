@@ -193,7 +193,7 @@ function create_file_watch(folder_root, full_topic_name, extensions, callback){
             if (err != undefined){
                 console.log("warning error in file read ",filepath, " error: ",err);
             }else if (!is_json_content){
-                console.log("warning content is not json in ", filepath);
+                console.log("warning content is not json in ", filepath, "content", content);
             }else{ // no errors and is json so we can safely call the callback
                 callback({
                     filepath: filepath,

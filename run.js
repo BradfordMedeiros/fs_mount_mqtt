@@ -23,7 +23,8 @@ topics = [
     //"/states/device0/fire",
     //"/states/device1/air",
     "/states/temperature",
-    "/states/color"
+    "/states/color",
+    "/actions/test"
 ]
 
 if (should_run === true){
