@@ -1,0 +1,22 @@
+{
+  "name": "fs_mount_mqtt",
+  "version": "1.0.0",
+  "description": "a package to mount mqtt topics to the filesystem",
+  "main": "fs_mount_mqtt.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BradfordMedeiros/fs_mount_mqtt.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BradfordMedeiros/fs_mount_mqtt/issues"
+  },
+  "homepage": "https://github.com/BradfordMedeiros/fs_mount_mqtt#readme"
+}
