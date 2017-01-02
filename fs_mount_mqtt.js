@@ -140,7 +140,7 @@ function initialize_mqtt_topics (folder_root,topics,extensions){
             console.log("topic:  ",value," modified");
             publish_mqtt_topic(client,value.topic,value.content);
         });
-    };
+    }
 }
 
 // Initializes the logic to subscribe to an individual mqtt topic
@@ -176,16 +176,16 @@ function create_file_watch(folder_root, full_topic_name, extensions, callback){
         throw (new Error("callback must be defined in create file watch"));
     }
     
-    var filepath = path.join(path.resolve(folder_root),get_file_name(full_topic_name,extensions))
+    var filepath = path.join(path.resolve(folder_root),get_file_name(full_topic_name,extensions));
     var watcher = chokidar.watch(filepath);
     var process_watch = function(){
     
-        fse.readFile(filepath, 'utf-8', function(err,content){   
+        fse.readFile(filepath, "utf-8", function(err,content){   
 
             var is_json_content = true;
             var parsed_content = undefined;
             try{
-               parsed_content = JSON.parse(content);
+                parsed_content = JSON.parse(content);
             }catch(e){
                 is_json_content = false;
             }
@@ -203,7 +203,7 @@ function create_file_watch(folder_root, full_topic_name, extensions, callback){
                 });
             }       
         }); 
-    }    
+    };    
     watcher.on("change", process_watch);
 }
 
@@ -219,8 +219,8 @@ function get_topic_exists_promise(folder_root, full_topic_name){
     }
     
     var topic_exists_promise = new Promise(function(resolve,reject){
-        var file_path = path.join(path.resolve(folder_root),topic_name)
-        fs.stat(file_path, function(err){
+        var file_path = path.join(path.resolve(folder_root), full_topic_name);
+        fse.stat(file_path, function(err){
             var file_exists = err == null;
             if (file_exists){
                 resolve(file_exists);
@@ -264,4 +264,4 @@ module.exports = {
     set_topic: set_topic,
     initialize_mqtt_topics: initialize_mqtt_topics,
     create_file_watch: create_file_watch
-}
+};
