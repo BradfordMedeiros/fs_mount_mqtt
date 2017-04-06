@@ -31,3 +31,11 @@ if (should_run === true){
     console.log("should run = true , initializing topics ",topics);
     mq.initialize_mqtt_topics(root_shared,topics,the_extensions);
 }
+
+
+const MQTT_MONGO_CONFIG = {
+  MONGO_URL : 'mongodb://localhost:27017/myproject',
+  MQTT_URL : 'http://127.0.0.1:1883',
+  SYNC_FOLDER_PATH: './test',
+};
+
