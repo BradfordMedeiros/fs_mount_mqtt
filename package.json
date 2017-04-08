@@ -1,6 +1,6 @@
 {
   "name": "fs_mount_mqtt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a package to mount mqtt topics to the filesystem",
   "main": "fs_mount_mqtt.js",
   "directories": {
