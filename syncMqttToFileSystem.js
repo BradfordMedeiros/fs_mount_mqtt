@@ -2,8 +2,9 @@ const mqtt = require('mqtt');
 const fse = require('fs-extra');
 const path = require('path');
 const util = require('./util');
+const { setValue } = require('./sharedBuffer');
 
-const syncMqttToFileSystem = ({ MQTT_URL, SYNC_FOLDER_PATH })=> {
+const syncMqttToFileSystem = ({ MQTT_URL, SYNC_FOLDER_PATH }) => {
   if (typeof(MQTT_URL) !== typeof('')) {
     throw (new Error('MQTT URL not of type string'));
   }
@@ -15,6 +16,7 @@ const syncMqttToFileSystem = ({ MQTT_URL, SYNC_FOLDER_PATH })=> {
   const client = mqtt.connect(MQTT_URL);
   client.subscribe('#');
   client.on('message', (mqtt_topic, message) => {
+    setValue(mqtt_topic, message);
     saveMqttTopicToFileSystem(path.resolve(SYNC_FOLDER_PATH), mqtt_topic, message.toString());
   });
 };
