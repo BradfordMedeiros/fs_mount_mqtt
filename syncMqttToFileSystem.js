@@ -2,7 +2,6 @@ const mqtt = require('mqtt');
 const fse = require('fs-extra');
 const path = require('path');
 const util = require('./util');
-const { setValue } = require('./sharedBuffer');
 
 const syncMqttToFileSystem = ({ MQTT_URL, SYNC_FOLDER_PATH }) => {
   if (typeof(MQTT_URL) !== typeof('')) {
@@ -16,7 +15,6 @@ const syncMqttToFileSystem = ({ MQTT_URL, SYNC_FOLDER_PATH }) => {
   const client = mqtt.connect(MQTT_URL);
   client.subscribe('#');
   client.on('message', (mqtt_topic, message) => {
-    setValue(mqtt_topic, message);
     saveMqttTopicToFileSystem(path.resolve(SYNC_FOLDER_PATH), mqtt_topic, message.toString());
   });
 };
@@ -40,8 +38,6 @@ const saveMqttTopicToFileSystem = (SYNC_FOLDER_PATH, mqtt_topic, mqtt_message ) 
   const mqtt_topic_folder = path.resolve(mqtt_topic_fs_path, '..');
 
   if (util.fileExists(mqtt_topic_folder)) {
-    console.log(0);
-    console.log(mqtt_topic_folder , 'exists');
     fse.remove(mqtt_topic_folder, () => {
       fse.outputFile(mqtt_topic_fs_path, mqtt_message);
     });
